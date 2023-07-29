@@ -7,7 +7,7 @@ locals {
     {
       Effect = "Allow"
       Principal = {
-        Federated = data.aws_iam_openid_connect_provider.oidc_eks.arn
+        Federated = module.eks.oidc_provider_arn
       }
       Action = "sts:AssumeRoleWithWebIdentity"
       Condition = {
@@ -20,9 +20,9 @@ locals {
   ]
 }
 
-data "aws_iam_openid_connect_provider" "oidc_eks" {
-  url = module.eks.cluster_oidc_issuer_url
-}
+# data "aws_iam_openid_connect_provider" "oidc_eks" {
+#   url = module.eks.cluster_oidc_issuer_url
+# }
 
 resource "aws_iam_role" "alb_role" {
   name = "AmazonEKSLoadBalancerControllerRole"
@@ -38,4 +38,5 @@ resource "aws_iam_policy_attachment" "alb_policy_attachment" {
   name       = "Policy Attachement"
   policy_arn = aws_iam_policy.alb_policy.arn
   roles      = [aws_iam_role.alb_role.name]
+  depends_on = [aws_iam_policy.alb_policy,aws_iam_role.alb_role]
 }

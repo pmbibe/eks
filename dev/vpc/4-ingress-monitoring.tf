@@ -1,4 +1,5 @@
 resource "kubernetes_ingress_v1" "prometheus-grafana" {
+  wait_for_load_balancer = true
   metadata {
     name = "prometheus-grafana"
     annotations = {
@@ -14,7 +15,7 @@ resource "kubernetes_ingress_v1" "prometheus-grafana" {
       host = "*.amazonaws.com"
       http {
         path {
-          path = "/"
+          path = "/*"
           backend {
             service {
               name = "prometheus-grafana"
@@ -30,4 +31,5 @@ resource "kubernetes_ingress_v1" "prometheus-grafana" {
       }
     }
   }
+  depends_on = [helm_release.monitor]
 }

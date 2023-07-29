@@ -14,6 +14,8 @@ resource "kubernetes_service_account" "alb-controller" {
     }
   }
 
+  depends_on = [module.eks]
+
 }
 resource "helm_release" "helm-alb-controller" {
   name       = "alb-controller"
@@ -41,6 +43,6 @@ resource "helm_release" "helm-alb-controller" {
     name  = "vpcId"
     value = module.vpc.vpc_id
   }
-  depends_on = [module.eks]
+  depends_on = [kubernetes_service_account.alb-controller]
 }
 
