@@ -13,3 +13,5 @@ terraform.rc
 .terraform.lock.hcl
 # 
 terraform-key.pem
+
+.terraform.lock.hcl

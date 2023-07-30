@@ -1,6 +1,45 @@
-module "eks" {
-  source          = "terraform-aws-modules/eks/aws"
-  version         = "~> 19.15.4"
+terraform {
+    source = "tfr://registry.terraform.io/terraform-aws-modules/eks/aws//.?version=19.15.4"
+}
+
+include "root" {
+  path   = find_in_parent_folders()
+}
+
+dependency "vpc" {
+  config_path = "../vpc"
+  mock_outputs = {
+    vpc_id = "vpc_mock"
+    private_subnets = ["10.0.16.0/20","10.0.32.0/20"]
+    intra_subnets = ["10.0.49.0/24","10.0.50.0/24","10.0.51.0/24"]
+  }  
+  # skip_outputs = true
+  mock_outputs_allowed_terraform_commands = ["plan", "validate", "init"]
+}
+
+dependency "cluster_sg_id" {
+  config_path = "../security_group_cluster_name"
+  mock_outputs = {
+    security_group_id = "security_group_id_mock"
+  }  
+  # skip_outputs = true
+  mock_outputs_allowed_terraform_commands = ["plan", "validate", "init"]
+}
+
+dependency "node_sg_id" {
+  config_path = "../security_group_node_name"
+  mock_outputs = {
+    security_group_id = "security_group_id_mock"
+  }  
+  # skip_outputs = true
+  mock_outputs_allowed_terraform_commands = ["plan", "validate", "init"]
+}
+
+
+locals {
+
+}
+inputs = {
   cluster_name    = "dev-cluster"
   cluster_version = "1.27"
   # add-on
@@ -13,6 +52,10 @@ module "eks" {
   #      - collect and send application traces from workloads running on Amazon EKS to AWS X-Ray.
   # aws-guardduty-agent - security monitoring service
   cluster_endpoint_public_access = true
+  create_cluster_security_group = false
+  cluster_security_group_id = dependency.cluster_sg_id.outputs.security_group_id
+  create_node_security_group = false
+  node_security_group_id = dependency.node_sg_id.outputs.security_group_id
   cluster_addons = {
     # coredns = {
     #   most_recent = true
@@ -30,11 +73,11 @@ module "eks" {
       resolve_conflicts_on_update = "PRESERVE"
     }
   }
-  manage_aws_auth_configmap = true
-  vpc_id                    = module.vpc.vpc_id
-  subnet_ids                = module.vpc.private_subnets # recommend deploying your nodes to private subnets
-  control_plane_subnet_ids  = module.vpc.intra_subnets
-  create_aws_auth_configmap = true
+  # manage_aws_auth_configmap = true
+  vpc_id                    = dependency.vpc.outputs.vpc_id
+  subnet_ids                = dependency.vpc.outputs.private_subnets # recommend deploying your nodes to private subnets
+  control_plane_subnet_ids  = dependency.vpc.outputs.intra_subnets
+  # create_aws_auth_configmap = true
   self_managed_node_group_defaults = {
     # enable discovery of autoscaling groups by cluster-autoscaler
     autoscaling_group_tags = {
@@ -46,19 +89,11 @@ module "eks" {
     dev-node-groups = {
       name          = "dev-node-groups"
       platform      = "bottlerocket"
-      ami_id        = data.aws_ami.eks_default_bottlerocket.id
+      ami_id        = "ami-031aaabc376771a72"
       desired_size  = 2
       instance_type = "t2.small"
       key_name      = "MacBook"
     }
   }
-  depends_on = [module.vpc]
 }
-data "aws_ami" "eks_default_  " {
-  most_recent = true
-  owners      = ["amazon"]
-  filter {
-    name   = "name"
-    values = ["bottlerocket-aws-k8s-1.27-x86_64-*"]
-  }
-}
+

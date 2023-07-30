@@ -23,13 +23,10 @@ resource "kubernetes_ingress_v1" "prometheus-grafana" {
                 number = 80
               }
             }
-
           }
-
-
         }
       }
     }
   }
-  depends_on = [helm_release.monitor]
+  depends_on = [helm_release.monitor, helm_release.helm-alb-controller]
 }
