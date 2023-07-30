@@ -1,4 +1,4 @@
- kubectll delete prometheus-grafana 
  kubectl delete ingress prometheus-grafana 
+ helm uninstall prometheus
  helm uninstall alb-controller -n kube-system
- kubectl destroy --auto-approve
+ terraform destroy --auto-approve
