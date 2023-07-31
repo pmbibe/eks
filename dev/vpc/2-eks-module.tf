@@ -52,9 +52,8 @@ module "eks" {
       key_name      = "MacBook"
     }
   }
-  depends_on = [module.vpc]
 }
-data "aws_ami" "eks_default_  " {
+data "aws_ami" "eks_default_bottlerocket" {
   most_recent = true
   owners      = ["amazon"]
   filter {
