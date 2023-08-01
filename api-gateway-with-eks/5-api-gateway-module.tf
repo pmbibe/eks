@@ -35,13 +35,12 @@ module "apigateway-v2" {
       description     = "integration with eks"
       vpc_link        = "my-vpc"
       integration_uri = data.aws_lb_listener.echo_svc_lb.arn
-      # integration_uri   = "arn:aws:elasticloadbalancing:us-east-1:861177970110:listener/net/k8s-default-echoserv-d67eceefe6/5e962d3f0061d9e5/009ba89b3e9c9574"
       integration_method = "ANY"
       integration_type   = "HTTP_PROXY"
       connection_type    = "VPC_LINK"
 
     }
   }
-  depends_on = [module.vpc, module.eks]
+  depends_on = [module.vpc, module.eks, kubernetes_service_v1.echo-service]
 
 }
