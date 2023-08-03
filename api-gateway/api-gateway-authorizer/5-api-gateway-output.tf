@@ -38,18 +38,3 @@ output "default_apigatewayv2_stage_invoke_url" {
   description = "The URL to invoke the API pointing to the stage"
   value       = module.apigateway-v2.default_apigatewayv2_stage_invoke_url
 }
-
-
-
-
-# api mapping
-# output "apigatewayv2_api_mapping_id" {
-#   description = "The API mapping identifier."
-#   value       = try(aws_apigatewayv2_api_mapping.this[0].id, "")
-# }
-
-# route
-# output "apigatewayv2_route_id" {
-#  description = "The default route identifier."
-#  value       = try(aws_apigatewayv2_route.this[0].id, "")
-# }

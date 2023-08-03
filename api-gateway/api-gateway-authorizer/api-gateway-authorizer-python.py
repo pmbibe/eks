@@ -11,37 +11,24 @@ from __future__ import print_function
 
 import re
 
-
 def lambda_handler(event, context):
-    """Do not print the auth token unless absolutely necessary """
-    #print("Client token: " + event['authorizationToken'])
-    print("Method ARN: " + event['methodArn'])
-    """validate the incoming token"""
-    """and produce the principal user identifier associated with the token"""
+        token = event['headers']['authorizationToken']
+        # token = "allow"
+        """this could be accomplished in a number of ways:"""
+        """1. Call out to OAuth provider"""
+        """2. Decode a JWT token inline"""
+        """3. Lookup in a self-managed DB"""
+        principalId = "user"
+        if token == "allow":
+            return generate_policy(principalId, event['routeArn'], "allow")
+        elif token == "deny":
+            return generate_policy(principalId, event['routeArn'], "deny")
+        else:
+            return generate_policy(principalId, event['routeArn'], "denyAll")
 
-    """this could be accomplished in a number of ways:"""
-    """1. Call out to OAuth provider"""
-    """2. Decode a JWT token inline"""
-    """3. Lookup in a self-managed DB"""
-    principalId = "user|a1b2c3d4"
-
-    """you can send a 401 Unauthorized response to the client by failing like so:"""
-    """raise Exception('Unauthorized')"""
-
-    """if the token is valid, a policy must be generated which will allow or deny access to the client"""
-
-    """if access is denied, the client will recieve a 403 Access Denied response"""
-    """if access is allowed, API Gateway will proceed with the backend integration configured on the method that was called"""
-
-    """this function must generate a policy that is associated with the recognized principal user identifier."""
-    """depending on your use case, you might store policies in a DB, or generate them on the fly"""
-
-    """keep in mind, the policy is cached for 5 minutes by default (TTL is configurable in the authorizer)"""
-    """and will apply to subsequent calls to any method/resource in the RestApi"""
-    """made with the same token"""
-
+def generate_policy(principalId, routeArn, effect):
     """the example policy below denies access to all resources in the RestApi"""
-    tmp = event['methodArn'].split(':')
+    tmp = routeArn.split(':')
     apiGatewayArnTmp = tmp[5].split('/')
     awsAccountId = tmp[4]
 
@@ -49,8 +36,16 @@ def lambda_handler(event, context):
     policy.restApiId = apiGatewayArnTmp[0]
     policy.region = tmp[3]
     policy.stage = apiGatewayArnTmp[1]
-    policy.denyAllMethods()
-    """policy.allowMethod(HttpVerb.GET, "/pets/*")"""
+    if len(apiGatewayArnTmp[3:]) > 1:
+        resource = '/'.join(apiGatewayArnTmp[3:])
+    else:
+        resource = apiGatewayArnTmp[3]
+    if effect == "allow":
+        policy.allowMethod(apiGatewayArnTmp[2], resource)
+    elif effect == "deny":
+        policy.denyMethod(apiGatewayArnTmp[2], resource)
+    else:
+        policy.denyAllMethods()
 
     # Finally, build the policy
     authResponse = policy.build()
@@ -58,15 +53,15 @@ def lambda_handler(event, context):
     # new! -- add additional key-value pairs associated with the authenticated principal
     # these are made available by APIGW like so: $context.authorizer.<key>
     # additional context is cached
-    context = {
-        'key': 'value', # $context.authorizer.key -> value
-        'number' : 1,
-        'bool' : True
-    }
+    # context = {
+    #     'key': 'value', # $context.authorizer.key -> value
+    #     'number' : 1,
+    #     'bool' : True
+    # }
     # context['arr'] = ['foo'] <- this is invalid, APIGW will not accept it
     # context['obj'] = {'foo':'bar'} <- also invalid
  
-    authResponse['context'] = context
+    # authResponse['context'] = context
     
     return authResponse
 
