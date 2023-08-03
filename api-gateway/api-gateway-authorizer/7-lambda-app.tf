@@ -36,4 +36,6 @@ module "lambda_function" {
       source_arn = "${module.apigateway-v2.apigatewayv2_api_execution_arn}/*/*"
     }
   }
+
+  depends_on = [resource.null_resource.download_package]
 }
