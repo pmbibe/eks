@@ -49,6 +49,7 @@ module "apigateway-v2" {
       audience                          = [aws_cognito_user_pool_client.client.id]
       issuer                            = "https://${aws_cognito_user_pool.jwt-user-pool.endpoint}"
       authorizer_payload_format_version = null
+      authorizer_result_ttl_in_seconds  = 0
     }
     "lambda-authorizer" = {
       authorizer_type                   = "REQUEST"
