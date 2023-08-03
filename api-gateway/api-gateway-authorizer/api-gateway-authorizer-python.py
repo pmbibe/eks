@@ -11,10 +11,6 @@ from __future__ import print_function
 
 import re
 
-import logging
-
-logging.basicConfig(level=logging.DEBUG)
-
 def lambda_handler(event, context):
         token = event['headers']['authorization']
         # token = "allow"
