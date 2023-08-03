@@ -11,6 +11,7 @@ resource "null_resource" "download_package" {
 
   provisioner "local-exec" {
     command = "curl -L -o ${local.downloaded} ${local.package_url}"
+    when = apply
   }
 }
 
