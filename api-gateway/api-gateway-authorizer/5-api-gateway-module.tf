@@ -11,8 +11,6 @@ module "apigateway-v2" {
     throttling_burst_limit   = 100
     throttling_rate_limit    = 100
   }
-    # default_stage_access_log_destination_arn = "arn:aws:logs:us-east-1:861177970110:log-group:Hihi"
-    # default_stage_access_log_format          = "$context.identity.sourceIp - - [$context.requestTime] \"$context.httpMethod $context.routeKey $context.protocol\" $context.status $context.responseLength $context.requestId  $context.integrationErrorMessage"
   integrations = {
     "GET /" = {
       lambda_arn             = module.lambda_function.lambda_function_arn
@@ -33,15 +31,12 @@ module "apigateway-v2" {
       payload_format_version = "2.0"
       authorization_type     = "JWT"
       authorizer_key         = "jwt-authorizer"
-      # throttling_rate_limit    = 80
-      # throttling_burst_limit   = 40
-      # detailed_metrics_enabled = true
     }
 
-    # "$default" = {
-    #   lambda_arn = module.lambda_function.lambda_function_arn
-    #   payload_format_version = "2.0"
-    # }
+    "$default" = {
+      lambda_arn = module.lambda_function.lambda_function_arn
+      payload_format_version = "2.0"
+    }
 
   }
 
@@ -63,7 +58,7 @@ module "apigateway-v2" {
       audience                          = []
       issuer                            = null
       authorizer_payload_format_version = "2.0"
-      authorizer_result_ttl_in_seconds = 0
+      authorizer_result_ttl_in_seconds  = 0
     }
   }
   depends_on = [aws_cognito_user_pool_client.client, aws_cognito_user_pool.jwt-user-pool]
